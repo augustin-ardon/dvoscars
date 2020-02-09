@@ -1,2 +1,87 @@
-Hello World
-This project aims at highlighting lack of diversity in oscar nominations
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+    body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+  </style>
+</head>
+
+<body>
+  <h1>Hello World</h1>
+  <p>
+    This project aims at highlighting the <b>lack of diversity</b> in oscar nominations.
+  </p>
+  <script>
+    var categories = ["CINEMATOGRAPHY", "ACTOR IN A LEADING ROLE", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
+    var margin = {left:20, right:20, top:20, bot:20}
+    
+    var svg = d3.select("body").append("svg")
+      .attr("width", 960)
+      .attr("height", 500)
+    
+    var height = 500 - margin.top - margin.bot,
+        width = 960 - margin.left - margin.right,
+        barwidth = 2*width/3;
+
+    var yAxis = d3.scaleLinear()
+        .range([height, 0]);
+
+    var xAxis = d3.axisTop(x)
+        .ticks(10)
+        .tickFormat(d3.format(''))
+    
+    var timeScale = d3.scaleTime()
+      	.domain([1930, 2018])
+      	.range([0, barwidth]);
+    
+    var x = d3.scaleBand()
+    		.domain([1930, 2018])
+    		.range([0, barwidth]);
+    
+    d3.csv("data.csv", function(error, data) {
+      
+           var nested = d3.nest()
+           		.key(function(d) {return d.award})
+           		.key(function(d) {return d.year})
+           		.rollup(function(d) {
+                return d3.sum(d.map(function(e) {
+                	return e.genre == "F" || e.genre == "X"
+              	}));
+							})
+           		.entries(data);
+           var filtered_data = nested.filter(function(d) {return categories.includes(d.key)})
+           
+           //process dates
+           filtered_data.forEach(function(d) {
+             d.values.forEach(function(e) {
+               e.key = +e.key;
+             })
+           })
+           
+           var barChartContainer = svg.append("g")
+           		.attr("transform", "translate(50, 50)");
+      		 
+      		 var barChart = barChartContainer.selectAll("g")
+           		.data(filtered_data).enter()
+           		.append("g")
+           		.attr("transform", function(d, i) {
+                	return "translate(0," + i*50 + ")";
+              });
+      		
+      		barChart.selectAll("rect")
+          		.data(function(d) {return d.values}).enter()
+          		.append("rect")
+           		.attr("width", 3)
+           		.attr("height", function(e, i) {
+            			console.log(e)
+             			return e.value
+           		})
+           		.attr("x", function(d) {return x(+d.key)})
+           		.attr("y", function(d) {return height/2 - d.value});
+           //console.log(nested);
+           });
+
+  </script>
+</body>
+
