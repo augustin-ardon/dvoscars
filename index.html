@@ -8,12 +8,8 @@
 </head>
 
 <body>
-  <h1>Hello World</h1>
-  <p>
-    This project aims at highlighting the <b>lack of diversity</b> in oscar nominations.
-  </p>
   <script>
-    var categories = ["CINEMATOGRAPHY", "ACTOR IN A LEADING ROLE", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
+    var categories = ["CINEMATOGRAPHY", "ACTRESS IN A SUPPORTING ROLE", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
     var margin = {left:20, right:20, top:20, bot:20}
     
     var svg = d3.select("body").append("svg")
@@ -31,57 +27,83 @@
         .ticks(10)
         .tickFormat(d3.format(''))
     
-    var timeScale = d3.scaleTime()
-      	.domain([1930, 2018])
-      	.range([0, barwidth]);
+    var chartScale = d3.scaleBand()
+    		.domain(categories)
+    		.range([height, 0]);
     
     var x = d3.scaleBand()
-    		.domain([1930, 2018])
     		.range([0, barwidth]);
     
+    var y = d3.scaleLinear()
+    		.domain([0, 1])
+    		.range([chartScale.bandwidth()-10, 0])
+    
+    var xAxis = d3.axisBottom()
+    .scale(x);
+
+    var yAxis = d3.axisLeft()
+    .scale(y);
+    
     d3.csv("data.csv", function(error, data) {
-      
+      		 x.domain(data.map(function(d) {return d.year}))		 
+
            var nested = d3.nest()
            		.key(function(d) {return d.award})
            		.key(function(d) {return d.year})
            		.rollup(function(d) {
-                return d3.sum(d.map(function(e) {
-                	return e.genre == "F" || e.genre == "X"
-              	}));
+                agg = {"M": d3.sum(d.map(function(e) {
+                	return e.genre == "M"})),
+                			 "F": d3.sum(d.map(function(e) {
+                	return e.genre == "F"})),
+                       "X": d3.sum(d.map(function(e) {
+                	return e.genre == "X"})),
+                       "tot": d.length};
+                return agg
 							})
            		.entries(data);
            var filtered_data = nested.filter(function(d) {return categories.includes(d.key)})
+           console.log(filtered_data);
            
            //process dates
            filtered_data.forEach(function(d) {
              d.values.forEach(function(e) {
                e.key = +e.key;
              })
-           })
-           
+           })   
+
            var barChartContainer = svg.append("g")
-           		.attr("transform", "translate(50, 50)");
+           		.attr("class", "barchart-container")
+           		.attr("transform", "translate(50,0)");
       		 
       		 var barChart = barChartContainer.selectAll("g")
            		.data(filtered_data).enter()
            		.append("g")
+           		.attr("class", "barchart")
            		.attr("transform", function(d, i) {
-                	return "translate(0," + i*50 + ")";
+                	return "translate(0," + chartScale(d.key) + ")";
               });
+      
+      		barChart.append("g")
+            	.attr("class", "x-axis")
+              .attr("transform", "translate(0," + chartScale.bandwidth() + ")")
+              .call(xAxis);
+          
+          barChart.append("g")
+              .attr("class", "y-axis")
+              .attr("transform", "translate(0," + margin.top/2 + ")")
+              .call(yAxis);
       		
       		barChart.selectAll("rect")
           		.data(function(d) {return d.values}).enter()
           		.append("rect")
-           		.attr("width", 3)
+           		.attr("width", x.bandwidth() - 1)
            		.attr("height", function(e, i) {
-            			console.log(e)
-             			return e.value
+             			return y(e.value.F / e.value.tot)
            		})
            		.attr("x", function(d) {return x(+d.key)})
-           		.attr("y", function(d) {return height/2 - d.value});
-           //console.log(nested);
-           });
+           		.attr("y", function(d) {
+            			return chartScale.bandwidth() - y(d.value.F/d.value.tot)});
+          		});
 
   </script>
 </body>
-
