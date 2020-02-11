@@ -13,7 +13,7 @@
     This project aims at highlighting the <b>lack of diversity</b> in oscar nominations.
   </p>
   <script>
-    var categories = ["CINEMATOGRAPHY", "ACTRESS IN A SUPPORTING ROLE", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
+    var categories = ["FILM EDITING", "MAKEUP AND HAIRSTYLING", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
     var margin = {left:20, right:20, top:20, bot:20}
     
     var svg = d3.select("body").append("svg")
@@ -23,13 +23,6 @@
     var height = 500 - margin.top - margin.bot,
         width = 960 - margin.left - margin.right,
         barwidth = 2*width/3;
-
-    var yAxis = d3.scaleLinear()
-        .range([height, 0]);
-
-    var xAxis = d3.axisTop(x)
-        .ticks(10)
-        .tickFormat(d3.format(''))
     
     var chartScale = d3.scaleBand()
     		.domain(categories)
@@ -40,17 +33,23 @@
     
     var y = d3.scaleLinear()
     		.domain([0, 1])
-    		.range([chartScale.bandwidth()-10, 0])
-    
-    var xAxis = d3.axisBottom()
-    .scale(x);
+    		.range([chartScale.bandwidth()-margin.top, 0]);
 
-    var yAxis = d3.axisLeft()
-    .scale(y);
+    var yAxis = d3.axisRight(y)
+    		.ticks(1)
+    		.tickFormat(d => d*100 + "%");
+		
+    var xAxis = d3.axisTop(x);
     
     d3.csv("data.csv", function(error, data) {
-      		 x.domain(data.map(function(d) {return d.year}))		 
+      		 x.domain(data.map(function(d) {return d.year}));	
+      		 xAxis.tickValues(x.domain().filter((d,i) => !(i%10)));
 
+           svg.append("g")
+              .attr("class", "x-axis")
+              .attr("transform", "translate("+ margin.left + "," + (margin.top + 10) + ")")
+              .call(xAxis);
+      
            var nested = d3.nest()
            		.key(function(d) {return d.award})
            		.key(function(d) {return d.year})
@@ -65,7 +64,10 @@
                 return agg
 							})
            		.entries(data);
-           var filtered_data = nested.filter(function(d) {return categories.includes(d.key)})
+      
+           var filtered_data = nested.filter(function(d) {
+             	return categories.includes(d.key)
+           });
            console.log(filtered_data);
            
            //process dates
@@ -73,41 +75,59 @@
              d.values.forEach(function(e) {
                e.key = +e.key;
              })
-           })   
+           });   
 
            var barChartContainer = svg.append("g")
            		.attr("class", "barchart-container")
-           		.attr("transform", "translate(50,0)");
+           		.attr("transform", "translate(0," + margin.top +")");
       		 
       		 var barChart = barChartContainer.selectAll("g")
            		.data(filtered_data).enter()
            		.append("g")
            		.attr("class", "barchart")
            		.attr("transform", function(d, i) {
-                	return "translate(0," + chartScale(d.key) + ")";
+                	return "translate("+margin.left+"," + chartScale(d.key) + ")";
               });
       
-      		barChart.append("g")
-            	.attr("class", "x-axis")
-              .attr("transform", "translate(0," + chartScale.bandwidth() + ")")
-              .call(xAxis);
+      		 barChart.append("rect")
+              .attr("height", chartScale.bandwidth()-10)
+              .attr("y", 10).attr("width", barwidth)
+              .style("fill", "red")
+            	.style("opacity", 0.4);
           
-          barChart.append("g")
+           barChart.append("g")
               .attr("class", "y-axis")
-              .attr("transform", "translate(0," + margin.top/2 + ")")
+              .attr("transform", "translate("+ barwidth + "," + (margin.top/2+10) + ")")
               .call(yAxis);
       		
-      		barChart.selectAll("rect")
+      		 barChart.selectAll("rect")
           		.data(function(d) {return d.values}).enter()
           		.append("rect")
            		.attr("width", x.bandwidth() - 1)
            		.attr("height", function(e, i) {
-             			return y(e.value.F / e.value.tot)
+             			return y(0) - y(e.value.F / e.value.tot)
            		})
-           		.attr("x", function(d) {return x(+d.key)})
+           		.attr("x", function(d) {return x(d.key)})
            		.attr("y", function(d) {
-            			return chartScale.bandwidth() - y(d.value.F/d.value.tot)});
+            			return margin.top + y(d.value.F/d.value.tot)
           		});
+      		
+      		 barChart.append("text")
+          			.attr("id", function(d, i) {return "label-"+i})
+             		.attr("x", 20)
+                .attr("y", 30)
+                .attr("dy", ".5em")
+            		.text(function(d) {return d.key})
+          			.style("font-size", "15px");
 
+           barChart.append("rect")
+            		.attr("height", 30)
+            		.attr("width", function(d, i) {
+            				return d3.select("#label-"+i).node().getBBox().width + 10})
+            		.attr("transform", "translate(15, 16)")
+            		.style("fill", "grey")
+            		.style("opacity", 0.7);
+
+    });
   </script>
 </body>
