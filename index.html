@@ -13,8 +13,10 @@
     This project aims at highlighting the <b>lack of diversity</b> in oscar nominations.
   </p>
   <script>
-    var categories = ["FILM EDITING", "MAKEUP AND HAIRSTYLING", "COSTUME DESIGN", "ACTRESS IN A LEADING ROLE"]
+    var categories = ["FILM EDITING", "MAKEUP AND HAIRSTYLING", "COSTUME DESIGN", "BEST PICTURE"]
     var margin = {left:20, right:20, top:20, bot:20}
+    
+    var legend = {M: "blue", X: "green", F:"red"}
     
     var svg = d3.select("body").append("svg")
       .attr("width", 960)
@@ -23,6 +25,33 @@
     var height = 500 - margin.top - margin.bot,
         width = 960 - margin.left - margin.right,
         barwidth = 2*width/3;
+    
+    var legend_container = svg.append("g")
+    		.attr("class", "legend")
+    		.attr("transform", "translate("+ (barwidth+margin.left*3) + ","+ margin.top*3 +")")
+    
+    legend_container.append("rect")
+    		.attr("height", 52)
+    		.attr("width", 40)
+    		.style("fill", "grey")
+    		.style("opacity", 0.7)
+    
+    legend_container.selectAll("rect.legend")
+    		.data(Object.keys(legend)).enter()
+    		.append("rect")
+    		.attr("class", "legend")
+    		.attr("width", 15)
+    		.attr("height", 15)
+    		.attr("y", (d, i) => 18*i)
+    		.attr("fill", x => legend[x])
+    
+    legend_container.selectAll("text")
+    		.data(Object.keys(legend)).enter()
+    		.append("text")
+    		.attr("x", 20)
+        .attr("y", (d, i) => 18*i + 4)
+        .attr("dy", ".5em")
+        .text(x => x)
     
     var chartScale = d3.scaleBand()
     		.domain(categories)
@@ -44,7 +73,7 @@
     d3.csv("data.csv", function(error, data) {
       		 x.domain(data.map(function(d) {return d.year}));	
       		 xAxis.tickValues(x.domain().filter((d,i) => !(i%10)));
-
+					 console.log(d3.nest().key(x => x.award).entries(data))
            svg.append("g")
               .attr("class", "x-axis")
               .attr("transform", "translate("+ margin.left + "," + (margin.top + 10) + ")")
@@ -68,14 +97,7 @@
            var filtered_data = nested.filter(function(d) {
              	return categories.includes(d.key)
            });
-           console.log(filtered_data);
-           
-           //process dates
-           filtered_data.forEach(function(d) {
-             d.values.forEach(function(e) {
-               e.key = +e.key;
-             })
-           });   
+           console.log(filtered_data);  
 
            var barChartContainer = svg.append("g")
            		.attr("class", "barchart-container")
@@ -92,26 +114,64 @@
       		 barChart.append("rect")
               .attr("height", chartScale.bandwidth()-10)
               .attr("y", 10).attr("width", barwidth)
-              .style("fill", "red")
+              .style("fill", "yellow")
             	.style("opacity", 0.4);
           
            barChart.append("g")
               .attr("class", "y-axis")
               .attr("transform", "translate("+ barwidth + "," + (margin.top/2+10) + ")")
               .call(yAxis);
-      		
-      		 barChart.selectAll("rect")
-          		.data(function(d) {return d.values}).enter()
-          		.append("rect")
+      		 
+      		 var yearBar = barChart.selectAll("g.year")
+           		.data(function(d) {return d.values}).enter()
+           		.append("g")
+           		.attr("class", "year")
+           
+           // Women
+      		 yearBar.append("rect")
+           		.attr("class", "women")
            		.attr("width", x.bandwidth() - 1)
            		.attr("height", function(e, i) {
-             			return y(0) - y(e.value.F / e.value.tot)
+             			return y(0) - y(e.value.F / e.value.tot);
+           		})
+           		.attr("x", function(d) {return x(d.key);})
+           		.attr("y", function(d) {
+            			return margin.top + y(d.value.F/d.value.tot);
+          		})
+           		.style("fill", legend.F);
+      
+      		 // Mixte
+      		 yearBar.append("rect")
+           		.attr("class", "mixt")
+           		.attr("width", x.bandwidth() - 1)
+           		.attr("height", function(e, i) {
+             			return y(0) - y(e.value.X / e.value.tot);
            		})
            		.attr("x", function(d) {return x(d.key)})
            		.attr("y", function(d) {
-            			return margin.top + y(d.value.F/d.value.tot)
-          		});
-      		
+            			return margin.top + y((d.value.X + d.value.F)/d.value.tot);
+          		})
+           		.style("fill", legend.X);
+      
+      		// Men
+      		 yearBar.append("rect")
+           		.attr("class", "men")
+           		.attr("width", x.bandwidth() - 1)
+           		.attr("height", function(e, i) {
+             			return y(0) - y(e.value.M / e.value.tot);
+           		})
+           		.attr("x", function(d) {return x(d.key)})
+           		.attr("y", function(d) {
+            			return margin.top + y((d.value.M+d.value.X+d.value.F)/d.value.tot);
+          		})
+           		.style("fill", legend.M);
+
+           var label_container = barChart.append("rect")
+            		.attr("height", 30)
+            		.attr("transform", "translate(15, 17)")
+            		.style("fill", "grey")
+           			.style("opacity", 0.9);
+					 
       		 barChart.append("text")
           			.attr("id", function(d, i) {return "label-"+i})
              		.attr("x", 20)
@@ -119,15 +179,11 @@
                 .attr("dy", ".5em")
             		.text(function(d) {return d.key})
           			.style("font-size", "15px");
-
-           barChart.append("rect")
-            		.attr("height", 30)
-            		.attr("width", function(d, i) {
-            				return d3.select("#label-"+i).node().getBBox().width + 10})
-            		.attr("transform", "translate(15, 16)")
-            		.style("fill", "grey")
-            		.style("opacity", 0.7);
-
+      
+      		 label_container.attr("width", function(d, i) {
+            				return d3.select("#label-"+i).node().getBBox().width + 10;
+           });
     });
+
   </script>
 </body>
