@@ -200,19 +200,22 @@
     }
     var global_data;
     d3.csv("data.csv", function(error, data) {
-      global_data = data
-      d3.select("#category").selectAll("option")
-        .data(d3.map(data, x => x.award).keys()).enter()
-        .append("option")
-        .attr("value", x => x)
-        .html(x => x);
-        });
-    
-	  $(document).ready(function() {
-		    $('#category').multiSelect();
+        global_data = data
+        d3.select("#category").selectAll("option")
+          .data(d3.map(data, x => x.award).keys()).enter()
+          .append("option")
+          .attr("value", x => x)
+          .html(x => x);
+      			    $('#category').multiSelect();
       	$(".ms-selectable").css("width", "300px");
         $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
+    });
+    
+	  $(document).ready(function() {
+
       	$("#validate").on("click", function(d) {
+          	d3.selectAll("g.barchart").remove();
+          	d3.selectAll("g.x-axis").remove();
         		var categories = d3.selectAll("li.ms-selected")
             		.nodes()
             		.filter(function(d){
@@ -220,7 +223,7 @@
                 })
             		.map(function(d) {return d.innerText})
             draw(categories, global_data);
-            });
+        });
     });
   </script>
 </body>
