@@ -74,12 +74,12 @@
     
     // Chart
     var svg = d3.select("#chart_container").append("svg")
-      .attr("width", barwidth)
+      .attr("width", barwidth + 150)
       .attr("height", 500)
     
     var legend_container = svg.append("g")
     		.attr("class", "legend")
-    		.attr("transform", "translate("+ (barwidth+margin.left*3) + ","+ margin.top*3 +")")
+    		.attr("transform", "translate("+ (barwidth + 50) + ","+ margin.top*3 +")")
     
     legend_container.append("rect")
     		.attr("height", 52)
@@ -105,7 +105,7 @@
         .text(x => legend[x].label)
     
     
-    var svg2 = d3.select("spider_container").append("svg")
+    var svg2 = d3.select("#spider_container").append("svg")
     		.attr("height", 500)
     		.attr("width", 200)
     
@@ -313,7 +313,7 @@
                 })
             		.map(function(d) {return d.innerText})
             draw_stacked(categories, global_data);
-            draw_radar(categories, global_data, dates);
+          	draw_radar(categories, global_data, dates);
         });
     });
   </script>
