@@ -6,10 +6,27 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/multi-select/0.9.12/js/jquery.multi-select.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/multi-select/0.9.12/css/multi-select.css">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <script src="RadarChart.js"></script>
   
   <style>
-    body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
-    #container {overflow-y: scroll;}
+    body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; overflow-y: scroll;}
+    
+    .axis {
+      font: 15px sans-serif;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #D4D8DA;
+      stroke-width: 2px;
+      shape-rendering: crispEdges;
+    }
+    #chart {
+      position: absolute;
+      top: 50px;
+      left: 100px;
+    }
   </style>
 </head>
 
@@ -24,22 +41,41 @@
     </select>
     <button id="validate">Save</button>
   </div>
-  <div id="container" class="scrollbar-ripe-malinka">
+  <div id="spider_container"></div>
+  <div id="chart_container">
   </div>
   <script> 
-    var categories = ["FILM EDITING", "MAKEUP AND HAIRSTYLING", "COSTUME DESIGN", "BEST PICTURE"]
+  
+//     function update(){
+//             Mixt = d3.select("#myCheckbox").property("checked")		
+//             }	
+//     console.log(Mixt)
+
+//     d3.select("#myCheckbox").on("change",update);
+//           update();
+    
+    // ---------------------------------
     var margin = {left:20, right:20, top:20, bot:20}
     
-    var legend = {M: "blue", X: "green", F:"red"}
-    
-    // Chart
-    var svg = d3.select("#container").append("svg")
-      .attr("width", 960)
-      .attr("height", 500)
+    var legend = {M: {label: "Males", color:"#dba88f"}, X: {label: "Mixt", color: "green"}, F: {label: "Females", color: "#b82a34"}}
     
     var height = 500 - margin.top - margin.bot,
         width = 960 - margin.left - margin.right,
-        barwidth = 2*width/3;
+        barwidth = 2*width/3,
+    		config = {
+          w: 300,
+          h: 300,
+          maxValue: 100,
+          levels: 5,
+          ExtraWidthX: 300
+        },
+        dates = [1920, 1990, 2000, 2010],
+    		Mixt;
+    
+    // Chart
+    var svg = d3.select("#chart_container").append("svg")
+      .attr("width", barwidth)
+      .attr("height", 500)
     
     var legend_container = svg.append("g")
     		.attr("class", "legend")
@@ -47,8 +83,8 @@
     
     legend_container.append("rect")
     		.attr("height", 52)
-    		.attr("width", 40)
-    		.style("fill", "grey")
+    		.attr("width", 65)
+    		.style("fill", "#ebebed")
     		.style("opacity", 0.7)
     
     legend_container.selectAll("rect.legend")
@@ -58,17 +94,23 @@
     		.attr("width", 15)
     		.attr("height", 15)
     		.attr("y", (d, i) => 18*i)
-    		.attr("fill", x => legend[x])
-    
+    		.attr("fill", x => legend[x].color)
+
     legend_container.selectAll("text")
     		.data(Object.keys(legend)).enter()
     		.append("text")
     		.attr("x", 20)
-        .attr("y", (d, i) => 18*i + 4)
+        .attr("y", (d, i) => 18*i + 6)
         .attr("dy", ".5em")
-        .text(x => x)
+        .text(x => legend[x].label)
     
-    var draw = function(categories, data) {
+    
+    var svg2 = d3.select("spider_container").append("svg")
+    		.attr("height", 500)
+    		.attr("width", 200)
+    
+    //------------------- Drawing stacked bar chart -----------------
+    var draw_stacked = function(categories, data) {
     
         var chartScale = d3.scaleBand()
             .domain(categories)
@@ -111,8 +153,7 @@
 
         var filtered_data = nested.filter(function(d) {
           return categories.includes(d.key)
-        });
-        console.log(filtered_data);  
+        });  
 
         var barChartContainer = svg.append("g")
         .attr("class", "barchart-container")
@@ -129,7 +170,7 @@
         barChart.append("rect")
           .attr("height", chartScale.bandwidth()-10)
           .attr("y", 10).attr("width", barwidth)
-          .style("fill", "yellow")
+          .style("fill", "#ebebed")
           .style("opacity", 0.4);
 
         barChart.append("g")
@@ -153,7 +194,7 @@
           .attr("y", function(d) {
           return margin.top + y(d.value.F/d.value.tot);
         })
-          .style("fill", legend.F);
+          .style("fill", legend.F.color);
 
         // Mixte
         yearBar.append("rect")
@@ -166,20 +207,20 @@
           .attr("y", function(d) {
           return margin.top + y((d.value.X + d.value.F)/d.value.tot);
         })
-          .style("fill", legend.X);
+          .style("fill", legend.X.color);
 
         // Men
         yearBar.append("rect")
           .attr("class", "men")
           .attr("width", x.bandwidth() - 1)
           .attr("height", function(e, i) {
-          return y(0) - y(e.value.M / e.value.tot);
-        })
+          		return y(0) - y(e.value.M / e.value.tot);
+        	})
           .attr("x", function(d) {return x(d.key)})
           .attr("y", function(d) {
-          return margin.top + y((d.value.M+d.value.X+d.value.F)/d.value.tot);
-        })
-          .style("fill", legend.M);
+            	return margin.top + y((d.value.M+d.value.X+d.value.F)/d.value.tot);
+          })
+          .style("fill", legend.M.color);
 
         var label_container = barChart.append("rect")
         .attr("height", 30)
@@ -199,6 +240,53 @@
           return d3.select("#label-"+i).node().getBBox().width + 10;
         });
     }
+    
+    // ------------------- Drawing radar chart -----------------
+    var draw_radar = function(cat, data, dates) {
+        
+      // 1ere zone dans le graph
+      var nested1 = d3.nest()
+        .key(function(d) {return d.award})
+        .rollup(function(d) {
+          agg = {"M": d3.sum(d.map(function(e) {
+            return e.genre == "M" && e.year >= dates[0] && e.year <= dates[1]})),
+                 "F": d3.sum(d.map(function(e) {
+                   return e.genre == "F" && e.year >= dates[0] && e.year <= dates[1]})),
+                 "X": d3.sum(d.map(function(e) {
+                   return e.genre == "X" && e.year >= dates[0] && e.year <= dates[1]})),
+                 "tot": d3.sum(d.map(function(e) {
+                   return e.year >= dates[0] && e.year <= dates[1]}))};
+          return 100*agg.F/agg.tot
+        })
+        .entries(data);
+
+      var filtered1 = nested1.filter(function(d) {return cat.includes(d.key)})
+
+      // 2e zone dans le graph
+      var nested2 = d3.nest()
+        .key(function(d) {return d.award})
+        .rollup(function(d) {
+          agg = {"M": d3.sum(d.map(function(e) {
+            return e.genre == "M" && e.year >= dates[2] && e.year <= dates[3]})),
+                 "F": d3.sum(d.map(function(e) {
+                   return e.genre == "F" && e.year >= dates[2] && e.year <= dates[3]})),
+                 "X": d3.sum(d.map(function(e) {
+                   return e.genre == "X" && e.year >= dates[2] && e.year <= dates[3]})),
+                 "tot": d3.sum(d.map(function(e) {
+                   return e.year >= dates[2] && e.year <= dates[3]}))};
+          if (Mixt) {
+            return 100*(agg.F+agg.X)/agg.tot
+          }
+          else {
+            return 100*agg.F/agg.tot
+          }
+        })
+        .entries(data);
+      var filtered2 = nested2.filter(function(d) {return cat.includes(d.key)})
+
+      RadarChart.draw("#spider_container", [filtered1,filtered2], config)
+    }
+    
     var global_data;
     d3.csv("data.csv", function(error, data) {
         global_data = data
@@ -207,7 +295,7 @@
           .append("option")
           .attr("value", x => x)
           .html(x => x);
-      			    $('#category').multiSelect();
+      	$('#category').multiSelect();
       	$(".ms-selectable").css("width", "300px");
         $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
     });
@@ -217,13 +305,15 @@
       	$("#validate").on("click", function(d) {
           	d3.selectAll("g.barchart").remove();
           	d3.selectAll("g.x-axis").remove();
+          	svg2.selectAll("g").remove();
         		var categories = d3.selectAll("li.ms-selected")
             		.nodes()
             		.filter(function(d){
                   	return d.id.includes("selection") && d.id !== "0-selection"
                 })
             		.map(function(d) {return d.innerText})
-            draw(categories, global_data);
+            draw_stacked(categories, global_data);
+            draw_radar(categories, global_data, dates);
         });
     });
   </script>
