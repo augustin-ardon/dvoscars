@@ -422,8 +422,7 @@
             range2 = d3.select("p#range-data2")
             dates2 = [range2.attr("down-range"), range2.attr("up-range")]
             draw_stacked(categories, global_data);
-          	draw_radar(categories, global_data, dates1);
-          	draw_radar(categories, global_data, dates2);
+          	draw_radar(categories, global_data, dates1.concat(dates2));
         });
     });
   </script>
