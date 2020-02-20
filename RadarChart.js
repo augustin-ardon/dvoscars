@@ -26,8 +26,6 @@ var RadarChart = {
       }
     }
     
-    cfg.maxValue = 100;
-    
     var allAxis = (d[0].map(function(i, j){return i.key}));
     var total = allAxis.length;
     var radius = cfg.factor*Math.min(cfg.w/2, cfg.h/2);
