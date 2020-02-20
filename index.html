@@ -69,7 +69,7 @@
     var height = 500 - margin.top - margin.bot,
         width = 960 - margin.left - margin.right,
         barwidth = 2*width/3,
-    		config = {
+    	config = {
           w: 300,
           h: 300,
           maxValue: 100,
@@ -258,7 +258,7 @@
                    return e.genre == "F" && e.year >= dates[0] && e.year <= dates[1]})),
                  "X": d3.sum(d.map(function(e) {
                    return e.genre == "X" && e.year >= dates[0] && e.year <= dates[1]})),
-                 "tot": d3.sum(d.map(function(e) {
+                 "tot": 0.001 + d3.sum(d.map(function(e) {
                    return e.year >= dates[0] && e.year <= dates[1]}))};
           return 100*agg.F/agg.tot
         })
@@ -276,7 +276,7 @@
                    return e.genre == "F" && e.year >= dates[2] && e.year <= dates[3]})),
                  "X": d3.sum(d.map(function(e) {
                    return e.genre == "X" && e.year >= dates[2] && e.year <= dates[3]})),
-                 "tot": d3.sum(d.map(function(e) {
+                 "tot": 0.001 + d3.sum(d.map(function(e) {
                    return e.year >= dates[2] && e.year <= dates[3]}))};
           if (Mixt) {
             return 100*(agg.F+agg.X)/agg.tot
@@ -287,6 +287,36 @@
         })
         .entries(data);
       var filtered2 = nested2.filter(function(d) {return cat.includes(d.key)})
+      
+      config.maxValue = d3.max(filtered1.concat(filtered2),function(d) {return d.value})
+	  if (config.maxValue >= 80) {
+	    config.maxValue = 100
+	    config.levels = 5
+	  }
+	  else if (config.maxValue >= 60) {
+	    config.maxValue = 80
+	    config.levels = 4
+	  }
+	  else if (config.maxValue >= 40) {
+	    config.maxValue = 60
+	    config.levels = 6
+	  }
+	  else if (config.maxValue >= 20) {
+	    config.maxValue = 40
+	    config.levels = 4
+	  }
+	  else if (config.maxValue >= 10) {
+	    config.maxValue = 20
+	    config.levels = 4
+	  }
+	  else if (config.maxValue >= 2) {
+	    config.maxValue = 10
+	    config.levels = 5
+	  }
+  else {
+	    config.maxValue = 2
+	    config.levels = 4
+	  }
 
       RadarChart.draw("#spider_chart", [filtered1,filtered2], config)
     }
