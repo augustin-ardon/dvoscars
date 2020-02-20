@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/multi-select/0.9.12/css/multi-select.css">
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <script src="https://unpkg.com/d3-simple-slider"></script>
   <script src="RadarChart.js"></script>
   
   <style>
@@ -41,8 +42,14 @@
     </select>
     <button id="validate">Save</button>
   </div>
-  <div id="spider_container"></div>
-  <div id="chart_container">
+  <div id="container">
+  	<div id="spider_container">
+    	<div id="slider-range">
+    		<p id="range-data" down-range="1930" up-range="2010"></p>
+    	</div>
+      <div id="spider_chart"></div>
+  	</div>
+  	<div id="chart_container"></div>
   </div>
   <script> 
   
@@ -67,7 +74,8 @@
           h: 300,
           maxValue: 100,
           levels: 5,
-          ExtraWidthX: 300
+          ExtraWidthX: 200,
+          TranslateY: 100
         },
         dates = [1920, 1990, 2000, 2010],
     		Mixt;
@@ -80,6 +88,7 @@
     var legend_container = svg.append("g")
     		.attr("class", "legend")
     		.attr("transform", "translate("+ (barwidth + 50) + ","+ margin.top*3 +")")
+    		.attr("display", "none")
     
     legend_container.append("rect")
     		.attr("height", 52)
@@ -103,11 +112,6 @@
         .attr("y", (d, i) => 18*i + 6)
         .attr("dy", ".5em")
         .text(x => legend[x].label)
-    
-    
-    var svg2 = d3.select("#spider_container").append("svg")
-    		.attr("height", 500)
-    		.attr("width", 200)
     
     //------------------- Drawing stacked bar chart -----------------
     var draw_stacked = function(categories, data) {
@@ -284,7 +288,7 @@
         .entries(data);
       var filtered2 = nested2.filter(function(d) {return cat.includes(d.key)})
 
-      RadarChart.draw("#spider_container", [filtered1,filtered2], config)
+      RadarChart.draw("#spider_chart", [filtered1,filtered2], config)
     }
     
     var global_data;
@@ -298,20 +302,53 @@
       	$('#category').multiSelect();
       	$(".ms-selectable").css("width", "300px");
         $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
+      
+      	var sliderRange = d3.sliderBottom()
+          .min(d3.min(data.map(x => x.year)))
+          .max(d3.max(data.map(x => x.year)))
+          .width(400)
+          .tickFormat(d3.format('.4i'))
+          .ticks(7)
+          .default([1930, 2018])
+          .fill('#2196f3')
+          .on('onchange', val => {
+            range = d3.select("p#range-data");
+            range.attr("down-range", d3.format(".4i")(val[0]));
+            range.attr("up-range", d3.format(".4i")(val[1]));
+          });
+
+        var gRange = d3.select('div#slider-range')
+          .append('svg')
+          .attr('width', 500)
+          .attr('height', 100)
+          .append('g')
+          .attr('transform', 'translate(30,30)');
+
+        gRange.call(sliderRange);
+
+        d3.select('p#value-range')
+          .text(sliderRange.value()
+            		.map(d3.format('.4i'))
+            		.join('-')
+        	);
     });
     
 	  $(document).ready(function() {
 
       	$("#validate").on("click", function(d) {
+          	if (legend_container.attr("display") == "none") {
+              legend_container.attr("display", "");
+            } 
           	d3.selectAll("g.barchart").remove();
           	d3.selectAll("g.x-axis").remove();
-          	svg2.selectAll("g").remove();
         		var categories = d3.selectAll("li.ms-selected")
             		.nodes()
             		.filter(function(d){
                   	return d.id.includes("selection") && d.id !== "0-selection"
                 })
             		.map(function(d) {return d.innerText})
+            range1 = d3.select("p#range-data")
+            dates = [range1.attr("down-range"), range1.attr("up-range")]
             draw_stacked(categories, global_data);
           	draw_radar(categories, global_data, dates);
         });
