@@ -74,7 +74,7 @@ var RadarChart = {
        .style("font-size", "10px")
        .attr("transform", "translate(" + (cfg.w/2-levelFactor + cfg.ToRight) + ", " + (cfg.h/2-levelFactor) + ")")
        .attr("fill", "#737373")
-       .text((j+1)*cfg.maxValue/cfg.levels);
+       .text(Format((j+1)*cfg.maxValue/cfg.levels));
     }
 
     series = 0;
