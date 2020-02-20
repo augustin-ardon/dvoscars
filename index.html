@@ -250,6 +250,58 @@
         label_container.attr("width", function(d, i) {
           return d3.select("#label-"+i).node().getBBox().width + 10;
         });
+	    // Tooltip handling -----------------------------
+	d3.selectAll("g.year")
+		.on("mousemove", function(d) {
+
+	      var tooltip_year = d3.selectAll("g.year")
+		.filter(e => e.key == d.key)
+		.raise()
+		.append("g")
+		.attr("class", "tooltip-year")
+
+	      tooltip_year.append("rect")
+		.attr("x", x(d.key) + x.bandwidth()/4 + 1)
+              	.attr("y", 20)
+              	.attr("width", 1)
+              	.attr("height", chartScale.bandwidth() - 20)
+              	.attr("fill", "#d9d4d4");
+          
+          		tooltip_year.append("rect")
+              	.attr("x", x(d.key) - 40)
+              	.attr("y", chartScale.bandwidth()/2 - 5)
+              	.attr("height", 30)
+              	.attr("width", 87 + x.bandwidth())
+              	.attr("fill", "#f5f5f5")
+              
+              tooltip_year.append("text")
+              	.attr("x", x(d.key))
+              	.attr("y", chartScale.bandwidth()/2 + 5)
+              	.attr("dx", "0.4em")
+              	.attr("dy", "0.2em")
+                .attr('text-anchor', 'middle')
+              	.html(function(d) {
+                tip = "<tspan fill=" + legend.F.color + ">&#9792;</tspan>:" + d.value.F + " <tspan fill=" + legend.X.color + ">&#9893;</tspan fill=" + legend.M.color + ">:" + d.value.X + " <tspan>&#9794;</tspan>:" + d.value.M
+                return tip
+              });
+          
+          		tooltip_year.append("text")
+              	.attr("x", x(d.key))
+              	.attr("y", chartScale.bandwidth()/2 + 5)
+              	.attr("dx", "0.5em")
+              	.attr("dy", "1.2em")
+                .attr('text-anchor', 'middle')
+              	.html(function(d) {
+                return "Year :"+ d.key
+              });
+
+
+        })
+        .on("mouseout", function(d) {
+          d3.selectAll("g.tooltip-year").remove();
+          d3.selectAll(".label-rect").raise();
+          d3.selectAll(".label-text").raise();
+        });
     }
     
     // ------------------- Drawing radar chart -----------------
