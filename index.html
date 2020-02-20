@@ -32,9 +32,9 @@
 </head>
 
 <body>
-   <h1>Women in the Academy Awards Nominations</h1>
+   <h1>Hello World</h1>
   <p>
-    When the nominations got out this year, the media was very upset and disappointed with the Academy. They didn't honor any of the greatest female directors in 2020 with a nomination. This behaviour is systematic and highlights the bias that the Academy has against women. Let look into it...
+    This project aims at highlighting the <b>lack of diversity</b> in oscar nominations.
   </p>
   <div id="category-selector">
     <select id="category" class="form-control" multiple="multiple">
@@ -44,14 +44,17 @@
   </div>
   <div id="container">
   	<div id="spider_container">
-    	<div id="slider-range">
-    		<p id="range-data" down-range="1930" up-range="2010"></p>
+    	<div id="slider-range1">
+    		<p id="range-data1" down-range="1930" up-range="2010"></p>
+    	</div>
+      <div id="slider-range2">
+    		<p id="range-data2" down-range="1930" up-range="2010"></p>
     	</div>
       <div id="spider_chart"></div>
   	</div>
   	<div id="chart_container"></div>
   </div>
-  <script> 
+  <script>  
   
 //     function update(){
 //             Mixt = d3.select("#myCheckbox").property("checked")		
@@ -84,6 +87,7 @@
     var svg = d3.select("#chart_container").append("svg")
       .attr("width", barwidth + 150)
       .attr("height", 500)
+      .attr("transform", "translate(0, 100)")
     
     var legend_container = svg.append("g")
     		.attr("class", "legend")
@@ -333,31 +337,60 @@
       	$(".ms-selectable").css("width", "300px");
         $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
       
-      	var sliderRange = d3.sliderBottom()
+      	var sliderRange1 = d3.sliderBottom()
           .min(d3.min(data.map(x => x.year)))
           .max(d3.max(data.map(x => x.year)))
           .width(400)
           .tickFormat(d3.format('.4i'))
           .ticks(7)
           .default([1930, 2018])
-          .fill('#2196f3')
+        	.fill("#6F257F")
           .on('onchange', val => {
-            range = d3.select("p#range-data");
+            range = d3.select("p#range-data1");
+            range.attr("down-range", d3.format(".4i")(val[0]));
+            range.attr("up-range", d3.format(".4i")(val[1]));
+          });
+      
+      	var sliderRange2 = d3.sliderBottom()
+          .min(d3.min(data.map(x => x.year)))
+          .max(d3.max(data.map(x => x.year)))
+          .width(400)
+          .tickFormat(d3.format('.4i'))
+          .ticks(7)
+          .default([1930, 2018])
+        	.fill("#CA0D59")
+          .on('onchange', val => {
+            range = d3.select("p#range-data2");
             range.attr("down-range", d3.format(".4i")(val[0]));
             range.attr("up-range", d3.format(".4i")(val[1]));
           });
 
-        var gRange = d3.select('div#slider-range')
+        var gRange1 = d3.select('div#slider-range1')
           .append('svg')
           .attr('width', 500)
-          .attr('height', 100)
+          .attr('height', 50)
           .append('g')
           .attr('transform', 'translate(30,30)');
 
-        gRange.call(sliderRange);
+        gRange1.call(sliderRange1);
 
-        d3.select('p#value-range')
-          .text(sliderRange.value()
+        d3.select('p#value-range1')
+          .text(sliderRange1.value()
+            		.map(d3.format('.4i'))
+            		.join('-')
+        	);
+      	
+              var gRange2 = d3.select('div#slider-range2')
+          .append('svg')
+          .attr('width', 500)
+          .attr('height', 80)
+          .append('g')
+          .attr('transform', 'translate(30,10)');
+
+        gRange2.call(sliderRange2);
+
+        d3.select('p#value-range2')
+          .text(sliderRange2.value()
             		.map(d3.format('.4i'))
             		.join('-')
         	);
@@ -377,10 +410,13 @@
                   	return d.id.includes("selection") && d.id !== "0-selection"
                 })
             		.map(function(d) {return d.innerText})
-            range1 = d3.select("p#range-data")
-            dates = [range1.attr("down-range"), range1.attr("up-range")]
+            range1 = d3.select("p#range-data1")
+            dates1 = [range1.attr("down-range"), range1.attr("up-range")]
+            range2 = d3.select("p#range-data2")
+            dates2 = [range2.attr("down-range"), range2.attr("up-range")]
             draw_stacked(categories, global_data);
-          	draw_radar(categories, global_data, dates);
+          	draw_radar(categories, global_data, dates1);
+          	draw_radar(categories, global_data, dates2);
         });
     });
   </script>
