@@ -458,6 +458,14 @@
             		.map(d3.format('.4i'))
             		.join('-')
         	);
+	  $( document ).ready(function() {
+		  console.log(global_data)
+		  draw();
+
+      	$("#validate").on("click", function(d) {
+		draw();
+        });
+    });
     });
     
     var draw = function() {
@@ -479,15 +487,6 @@
       draw_stacked(categories, global_data);
       draw_radar(categories, global_data, dates1.concat(dates2));
     }
-    
-	  $( document ).ready(function() {
-		  console.log(global_data)
-		  draw();
-
-      	$("#validate").on("click", function(d) {
-		draw();
-        });
-    });
-	  draw();
+   
   </script>
 </body>
