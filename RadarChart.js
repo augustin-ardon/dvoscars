@@ -179,7 +179,7 @@ var RadarChart = {
             tooltip
               .attr('x', newX)
               .attr('y', newY)
-              .text(Format(d.value/100))
+              .text(d3.format(".1%")(d.value/100))
               .transition(200)
               .style('opacity', 1);
 
