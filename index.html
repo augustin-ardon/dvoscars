@@ -41,7 +41,7 @@
    <h1>Female Nominees at the Academy Awards</h1>
   <div id="category-selector">
     <select id="category" class="form-control" multiple="multiple">
-      <option value="" disabled selected>Choose a category</option>
+<!--      <option value="" disabled selected>Choose a category</option>-->
     </select>
   </div>
   <div id="container">
@@ -388,7 +388,7 @@
       	var default_cat = ["DIRECTING", "MAKEUP AND HAIRSTYLING", "BEST PICTURE", "WRITING (Adapted Screenplay)", "WRITING (Original Screenplay)"];
         global_data = data;
         d3.select("#category").selectAll("option")
-          .data([0].concat(d3.map(data, x => x.award).keys())).enter()
+          .data(d3.map(data, x => x.award).keys()).enter()
           .append("option")
           .attr("value", x => x)
           .html(x => x);
