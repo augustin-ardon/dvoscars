@@ -388,7 +388,7 @@
       	var default_cat = ["DIRECTING", "MAKEUP AND HAIRSTYLING", "BEST PICTURE", "WRITING (Adapted Screenplay)", "WRITING (Original Screenplay)"];
         global_data = data;
         d3.select("#category").selectAll("option")
-          .data(d3.map(data, x => x.award).keys()).enter()
+          .data([0].concat(d3.map(data, x => x.award).keys())).enter()
           .append("option")
           .attr("value", x => x)
           .html(x => x);
