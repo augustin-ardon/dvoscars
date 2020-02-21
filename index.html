@@ -392,11 +392,12 @@
           .attr("value", x => x)
           .html(x => x);
       	$('#category').multiSelect();
-      	$(".ms-selectable").css("width", "300px");
-        $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
+      	$(".ms-selectable").css({"width": "300px", "position": "absolute", "left": "600px"});
+        $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "950px"});
       	$(".ms-elem-selectable").filter(function() {
         		return default_cat.includes($(this)[0].innerText)
         }).click()
+      	$('.ms-list').css("height","100px");
       
       	var sliderRange1 = d3.sliderBottom()
           .min(d3.min(data.map(x => x.year)))
