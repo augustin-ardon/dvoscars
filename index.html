@@ -122,6 +122,7 @@
     
     //------------------- Drawing stacked bar chart -----------------
     var draw_stacked = function(categories, data) {
+	    console.log(data);
     
         var chartScale = d3.scaleBand()
             .domain(categories)
@@ -308,6 +309,7 @@
     
     // ------------------- Drawing radar chart -----------------
     var draw_radar = function(cat, data, dates) {
+	    console.log(data);
         
       // 1ere zone dans le graph
       var nested1 = d3.nest()
