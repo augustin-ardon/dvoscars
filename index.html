@@ -386,7 +386,7 @@
     
     var global_data;
     d3.csv("data.csv", function(error, data) {
-      	var default_cat = ["DIRECTOR", "MAKEUP AND HAIRSTYLING", "BEST PICURE", "WRITING (Adapted Screenplay)", "WRITING (Original Screenplay)"];
+      	var default_cat = ["DIRECTING", "MAKEUP AND HAIRSTYLING", "BEST PICTURE", "WRITING (Adapted Screenplay)", "WRITING (Original Screenplay)"];
         global_data = data;
         d3.select("#category").selectAll("option")
           .data(d3.map(data, x => x.award).keys()).enter()
