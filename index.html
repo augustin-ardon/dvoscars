@@ -384,7 +384,8 @@
     
     var global_data;
     d3.csv("data.csv", function(error, data) {
-        global_data = data
+      	var default_cat = ["COSTUME DESIGN", "SOUND MIXING", "VISUAL EFFECTS"];
+        global_data = data;
         d3.select("#category").selectAll("option")
           .data(d3.map(data, x => x.award).keys()).enter()
           .append("option")
@@ -393,6 +394,9 @@
       	$('#category').multiSelect();
       	$(".ms-selectable").css("width", "300px");
         $(".ms-selection").css({"width": "300px", "position": "absolute", "left": "350px"});
+      	$(".ms-elem-selectable").filter(function() {
+        		return default_cat.includes($(this)[0].innerText)
+        }).click()
       
       	var sliderRange1 = d3.sliderBottom()
           .min(d3.min(data.map(x => x.year)))
@@ -453,26 +457,31 @@
         	);
     });
     
+    var draw = function() {
+      if (legend_container.attr("display") == "none") {
+        legend_container.attr("display", "");
+      } 
+      d3.selectAll("g.barchart").remove();
+      d3.selectAll("g.x-axis").remove();
+      var categories = d3.selectAll("li.ms-selected")
+      .nodes()
+      .filter(function(d){
+        return d.id.includes("selection") && d.id !== "0-selection"
+      })
+      .map(function(d) {return d.innerText})
+      range1 = d3.select("p#range-data1")
+      dates1 = [range1.attr("down-range"), range1.attr("up-range")]
+      range2 = d3.select("p#range-data2")
+      dates2 = [range2.attr("down-range"), range2.attr("up-range")]
+      draw_stacked(categories, global_data);
+      draw_radar(categories, global_data, dates1.concat(dates2));
+    }
+    
 	  $(document).ready(function() {
+				draw();
 
       	$("#validate").on("click", function(d) {
-          	if (legend_container.attr("display") == "none") {
-              legend_container.attr("display", "");
-            } 
-          	d3.selectAll("g.barchart").remove();
-          	d3.selectAll("g.x-axis").remove();
-        		var categories = d3.selectAll("li.ms-selected")
-            		.nodes()
-            		.filter(function(d){
-                  	return d.id.includes("selection") && d.id !== "0-selection"
-                })
-            		.map(function(d) {return d.innerText})
-            range1 = d3.select("p#range-data1")
-            dates1 = [range1.attr("down-range"), range1.attr("up-range")]
-            range2 = d3.select("p#range-data2")
-            dates2 = [range2.attr("down-range"), range2.attr("up-range")]
-            draw_stacked(categories, global_data);
-          	draw_radar(categories, global_data, dates1.concat(dates2));
+					draw();
         });
     });
   </script>
