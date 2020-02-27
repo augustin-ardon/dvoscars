@@ -118,11 +118,12 @@
     		.style("opacity", 0.7)
     		.attr("transform", "translate(0, 100)")
     
-    legend_container.append("text")
+legend_container.append("text")
     		.attr("x", 0)
     		.attr("y", 115)
-    		.text("Number of nominations per category")
+    		.text("Nominations per year")
     		.style("font-weight", "bold")
+    		.style("font-size", "10px")
     
     legend_container.selectAll("text.nomination_count_cat")
     		.data(Object.keys(nomination_counts)).enter()
@@ -132,7 +133,8 @@
     		.attr("y", (d, i) => 120 + 18*i + 6)
     		.attr("dy", ".5em")
     		.text(x => x + " :")
-    
+        .style("font-size", "10px")
+
     legend_container.selectAll("text.nomination_count")
     		.data(Object.keys(nomination_counts)).enter()
     		.append("text")
@@ -141,6 +143,7 @@
     		.attr("y", (d, i) => 120 + 18*i + 6)
     		.attr("dy", ".5em")
     		.text(x => nomination_counts[x])
+    .style("font-size", "10px")
     
     //------------------- Drawing stacked bar chart -----------------
     var draw_stacked = function(categories, data) {
