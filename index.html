@@ -57,19 +57,11 @@
   	<div id="chart_container"></div>
   </div>
   <script>  
-  
-//     function update(){
-//             Mixt = d3.select("#myCheckbox").property("checked")		
-//             }	
-//     console.log(Mixt)
-
-//     d3.select("#myCheckbox").on("change",update);
-//           update();
-    
-    // ---------------------------------
     var margin = {left:20, right:20, top:20, bot:20}
     
     var legend = {M: {label: "Males", color:"#dba88f"}, X: {label: "Mixt", color: "green"}, F: {label: "Females", color: "#b82a34"}}
+    
+    var nomination_counts = {"BEST PICTURE": 9, "MAKEUP AND HAIRSTYLING": 3, "OTHER": 5};
     
     var height = 500 - margin.top - margin.bot,
         width = 960 - margin.left - margin.right,
@@ -98,7 +90,7 @@
     
     legend_container.append("rect")
     		.attr("height", 52)
-    		.attr("width", 65)
+    		.attr("width", 85)
     		.style("fill", "#ebebed")
     		.style("opacity", 0.7)
     
@@ -119,9 +111,39 @@
         .attr("dy", ".5em")
         .text(x => legend[x].label)
     
+    legend_container.append("rect")
+    		.attr("height", 75)
+    		.attr("width", 140)
+    		.style("fill", "#ebebed")
+    		.style("opacity", 0.7)
+    		.attr("transform", "translate(0, 100)")
+    
+    legend_container.append("text")
+    		.attr("x", 0)
+    		.attr("y", 115)
+    		.text("Number of nominations per category")
+    		.style("font-weight", "bold")
+    
+    legend_container.selectAll("text.nomination_count_cat")
+    		.data(Object.keys(nomination_counts)).enter()
+    		.append("text")
+    		.attr("class", "nomination_count_cat")
+    		.attr("x", 0)
+    		.attr("y", (d, i) => 120 + 18*i + 6)
+    		.attr("dy", ".5em")
+    		.text(x => x + " :")
+    
+    legend_container.selectAll("text.nomination_count")
+    		.data(Object.keys(nomination_counts)).enter()
+    		.append("text")
+    		.attr("class", "nomination_count")
+    		.attr("x", (d, i) => d3.selectAll(".nomination_count_cat").nodes()[i].getBBox().width + 10)
+    		.attr("y", (d, i) => 120 + 18*i + 6)
+    		.attr("dy", ".5em")
+    		.text(x => nomination_counts[x])
+    
     //------------------- Drawing stacked bar chart -----------------
     var draw_stacked = function(categories, data) {
-	    console.log(data);
     
         var chartScale = d3.scaleBand()
             .domain(categories)
@@ -238,7 +260,7 @@
         .attr("height", 30)
         .attr("transform", "translate(15, 17)")
         .style("fill", "grey")
-        .style("opacity", 0.9);
+        .style("opacity", 0.4);
 
         barChart.append("text")
 	  .attr("class", "label-text")
@@ -308,7 +330,6 @@
     
     // ------------------- Drawing radar chart -----------------
     var draw_radar = function(cat, data, dates) {
-	    console.log(data);
         
       // 1ere zone dans le graph
       var nested1 = d3.nest()
@@ -412,6 +433,7 @@
             range = d3.select("p#range-data1");
             range.attr("down-range", d3.format(".4i")(val[0]));
             range.attr("up-range", d3.format(".4i")(val[1]));
+            draw();
           });
       
       	var sliderRange2 = d3.sliderBottom()
@@ -426,6 +448,7 @@
             range = d3.select("p#range-data2");
             range.attr("down-range", d3.format(".4i")(val[0]));
             range.attr("up-range", d3.format(".4i")(val[1]));
+            draw();
           });
 
         var gRange1 = d3.select('div#slider-range1')
@@ -458,10 +481,10 @@
             		.join('-')
         	);
 	  $( document ).ready(function() {
-		  console.log(global_data)
 		  draw();
 
       	$(document).mouseup(function(d) {
+          $(d.target).trigger("click");
 		draw();
         });
     });
